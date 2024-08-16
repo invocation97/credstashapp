@@ -29,6 +29,7 @@ export const createOrganization = async (name: string, user: User) => {
     const organization = await db.organization.create({
       data: {
         name: validation.data.name,
+        ownerId: user.id,
       },
     });
 
@@ -70,8 +71,7 @@ export const addUsersToOrganization = async (
   data: z.infer<typeof addUsersToOrganizationSchema>,
   organizationId: string
 ) => {
-  const {emails} = data
-   
+  const { emails } = data;
 
   console.log("Emails before validation: ", emails);
 
