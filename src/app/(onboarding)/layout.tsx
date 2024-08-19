@@ -16,14 +16,14 @@ export default async function OnboardingLayout({
   }
 
   if (!isOnboarding) {
-    redirect("/dashboard");
+    redirect(`/organization/${session.user?.organizationId}/dashboard`);
   }
   return (
     <div className="mx-auto relative min-h-dvh flex justify-center items-center max-w-3xl space-y-8 py-12 px-4 sm:px-6 lg:px-8">
       <div className="absolute top-0 h-16">
         <SignOut>(╯°□°)╯︵ ┻━┻</SignOut>
       </div>
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 flex items-center justify-center">{children}</div>
     </div>
   );
 }

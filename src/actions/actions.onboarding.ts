@@ -5,8 +5,10 @@ import {
   createOrganizationSchema,
 } from "@/schemas/onboarding-schemas";
 import { User } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
+import { createFolder, newFolder } from "./actions.folders";
+import { newPage } from "./actions.pages";
 
 export const createOrganization = async (name: string, user: User) => {
   // Validate the input
@@ -43,7 +45,7 @@ export const createOrganization = async (name: string, user: User) => {
       });
     }
 
-    const updateUser = await db.user.update({
+    await db.user.update({
       where: { id: user.id },
       data: {
         organizationId: organization.id,
@@ -125,6 +127,50 @@ export const addUsersToOrganization = async (
     console.error("Error adding users to organization:", error);
     return {
       message: "An error occurred while adding users to the organization",
+      success: false,
+    };
+  }
+};
+
+export const finalizeOnboarding = async (user: User) => {
+  try {
+    await db.$transaction(async (db) => {
+      // Update the user to indicate they've completed onboarding
+      await db.user.update({
+        where: { id: user.id },
+        data: { didFinishOnboarding: true },
+      });
+
+      if (!user.organizationId) {
+        return {
+          message: "User does not have an organization",
+          success: false,
+        };
+      }
+
+      // Create a Root folder for the organization
+      const folder = await newFolder(
+        "Credentials",
+        user.organizationId,
+        user.id,
+        true // isRoot
+      );
+
+      // Create a Sample Page in the Root folder for the organization
+      await newPage("Sample Page", folder.id, user.organizationId, user.id);
+
+      revalidateTag("folders");
+      revalidateTag("pages");
+
+      // Revalidate the path to ensure frontend reflects the latest state
+      revalidatePath("/onboarding/finalize");
+    });
+
+    return { message: "Onboarding finalized", success: true };
+  } catch (error) {
+    console.error("Error finalizing onboarding:", error);
+    return {
+      error: "An error occurred while finalizing onboarding",
       success: false,
     };
   }

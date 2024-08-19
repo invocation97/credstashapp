@@ -1,10 +1,7 @@
 import { getOrganizationById } from "@/actions/actions.organizations";
 import { auth } from "@/auth";
+import LinkWithArrow from "@/components/common/LinkWithArrow";
 import CreateOrganizationForm from "@/components/forms/onboarding/CreateOrganizationForm";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function CreateOrganizationPage() {
@@ -39,13 +36,9 @@ export default async function CreateOrganizationPage() {
       ) : (
         <div className="relative max-w-md text-center">
           Congratulations on creating {organizationName}!
-          <Link
-            className={cn(buttonVariants({ variant: "link" }), "underline")}
-            href="/onboarding/add-users"
-          >
-            Add members to your organization
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </Link>
+          <LinkWithArrow href="/onboarding/add-users">
+            {`Let's add some users`}
+          </LinkWithArrow>
         </div>
       )}
     </>

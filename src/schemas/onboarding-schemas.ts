@@ -29,3 +29,7 @@ export const addUsersToOrganizationSchema = z.object({
     }, "Invalid email format")
     .transform((val) => val.split(",").map((email) => email.trim())),
 });
+
+export const finalizeOnboardingSchema = z.object({
+  finalize: z.string(),
+});

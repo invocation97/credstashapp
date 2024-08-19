@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "../styles/light-theme.css";
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -128,5 +130,21 @@
   h5,
   h6 {
     @apply font-heading;
+  }
+
+  .custom-gradient {
+    @apply bg-gradient-to-r from-stone-500 to-stone-700 bg-clip-text text-transparent;
+  }
+  .protruding-squares {
+    @apply bg-[#EEEEEE] bg-[url("/protruding-squares.svg")] bg-no-repeat bg-center bg-cover opacity-50;
+  }
+  .triangle-slope-divider-inverse {
+    @apply bg-[url("/triangle-slope-divider-inverse.svg")] bg-no-repeat bg-center bg-cover;
+  }
+  .tortoise-shell {
+    @apply bg-[url("/tortoise-shell.svg")] bg-no-repeat bg-center bg-cover blur-sm opacity-80;
+  }
+  .parabolic-pentagon {
+    @apply bg-[url("/parabolic-pentagon.svg")] bg-no-repeat bg-center bg-cover;
   }
 }

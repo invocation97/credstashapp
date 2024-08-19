@@ -1,6 +1,5 @@
 "use client";
 
-import { useActionState } from "react";
 import { sendOrganizationInvite } from "@/actions/actions.resend";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,10 +12,11 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { addUsersToOrganizationSchema } from "@/schemas/onboarding-schemas";
-import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useTransition } from "react";
+import React, { useTransition, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import LinkWithArrow from "@/components/common/LinkWithArrow";
 
 export default function AddUsersToOrganization({
   organizationId,
@@ -24,6 +24,8 @@ export default function AddUsersToOrganization({
   organizationId: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [message, setMessage] = useState("");
+  const [isFormDisabled, setFormDisabled] = useState(false);
 
   const addUsersForm = useForm<z.infer<typeof addUsersToOrganizationSchema>>({
     resolver: zodResolver(addUsersToOrganizationSchema),
@@ -36,13 +38,17 @@ export default function AddUsersToOrganization({
     values: z.infer<typeof addUsersToOrganizationSchema>
   ) => {
     startTransition(async () => {
-      const response = await sendOrganizationInvite(values, organizationId);
-      console.log("Response: ", response);
-      if (response.success) {
-        console.log("Users added successfully");
-      } else {
-        console.log("Error adding users: ", response.error);
-      }
+      await sendOrganizationInvite(values, organizationId).then((res) => {
+        if (!res.success) {
+          console.log("Error adding users: ", res.error);
+          setMessage(
+            addUsersForm.formState.errors.emails?.message || "An error occurred"
+          );
+        } else {
+          setMessage("Users have been notified");
+          setFormDisabled(true);
+        }
+      });
     });
   };
 
@@ -58,8 +64,8 @@ export default function AddUsersToOrganization({
             name="emails"
             render={({ field }) => (
               <FormItem>
-                <FormLabel htmlFor="org-name">
-                  Enter a comma separated list of emails
+                <FormLabel htmlFor="invite-emails">
+                  Enter a comma-separated list of emails
                 </FormLabel>
                 <FormControl>
                   <Textarea
@@ -68,15 +74,25 @@ export default function AddUsersToOrganization({
                     rows={3}
                     required
                     {...field}
+                    disabled={isFormDisabled}
                   />
                 </FormControl>
-                <FormMessage />
+                {message && <FormMessage>{message}</FormMessage>}
               </FormItem>
             )}
           />
-          <Button type="submit">
-            {isPending ? "Adding Users..." : "Add Users"}
-          </Button>
+
+          {isFormDisabled ? (
+            <div className="mt-4 text-center">
+              <LinkWithArrow href="/onboarding/finalize">
+                Proceed to Finalize Onboarding
+              </LinkWithArrow>
+            </div>
+          ) : (
+            <Button type="submit" disabled={isFormDisabled || isPending}>
+              {isPending ? "Adding Users..." : "Add Users"}
+            </Button>
+          )}
         </div>
       </form>
     </Form>
