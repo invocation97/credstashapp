@@ -110,7 +110,11 @@ export default function CreatePageForm({
                 <FormItem>
                   <FormLabel>Page Name</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Page name" />
+                    <Input
+                      {...field}
+                      placeholder="Page name"
+                      autoComplete="off"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,5 +1,4 @@
 "use client";
-import { ExtendedPageInfo } from "@/app/(dashboard)/dashboard/folders/[folderHandle]/page";
 import { cn } from "@/lib/utils";
 import { FilePenIcon, ShareIcon, TrashIcon } from "lucide-react";
 import Link from "next/link";
@@ -14,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { ExtendedPageInfo } from "@/app/(dashboard)/dashboard/folders/[folderHandle]/page";
 
 export default function RecentActivityTable({
   className,
@@ -45,7 +45,7 @@ export default function RecentActivityTable({
                 <TableRow key={page.id} className="cursor-pointer">
                   <TableCell>
                     <Link
-                      href={`/dashboard/folders/${page.folderHandle!.toLowerCase()}/page/${page.handle}`}
+                      href={`/dashboard/folders/${page.folderHandle ? page.folderHandle!.toLowerCase() : ""}/page/${page.handle}`}
                       className={buttonVariants({
                         variant: "link",
                         size: "sm",

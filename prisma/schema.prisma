@@ -52,6 +52,8 @@ model Organization {
     pages     Page[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    Invite Invite[]
 }
 
 model Folder {
@@ -115,6 +117,17 @@ model Account {
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@id([provider, providerAccountId])
+}
+
+model Invite {
+    id             String       @id @default(cuid())
+    email          String
+    organization   Organization @relation(fields: [organizationId], references: [id])
+    organizationId String
+    status         String       @default("pending") // possible values: pending, accepted, rejected
+    token          String       @unique
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
 }
 
 model Session {

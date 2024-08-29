@@ -16,7 +16,7 @@ export default async function OnboardingLayout({
   }
 
   if (!isOnboarding) {
-    redirect(`/organization/${session.user?.organizationId}/dashboard`);
+    redirect(`/dashboard`);
   }
   return (
     <div className="mx-auto relative min-h-dvh flex justify-center items-center max-w-3xl space-y-8 py-12 px-4 sm:px-6 lg:px-8">

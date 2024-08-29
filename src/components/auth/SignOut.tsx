@@ -10,8 +10,7 @@ export function SignOut({ children }: { children: React.ReactNode }) {
         });
       }}
     >
-      <p>{children}</p>
-      <button type="submit">Sign out</button>
+      <button type="submit">{children}</button>
     </form>
   );
 }

@@ -168,7 +168,11 @@ export const savePageContent = async (
 ) => {
   try {
     const page = await db.page.findUnique({
-      where: { handle: pageHandle, organizationId: organizationId, id },
+      where: {
+        id,
+        handle: pageHandle,
+        organizationId,
+      },
     });
 
     if (!page) {
@@ -178,10 +182,23 @@ export const savePageContent = async (
       };
     }
 
-    await db.page.update({
-      where: { id: page.id, organizationId, editedById: userId },
-      data: { content },
+    const updatedPage = await db.page.update({
+      where: { id: page.id },
+      data: {
+        content,
+        editedById: userId,
+        updatedAt: new Date(),
+      },
     });
+
+    if (!updatedPage) {
+      return {
+        success: false,
+        error: "Failed to update page.",
+      };
+    }
+
+    revalidateTag("pages");
 
     return {
       success: true,

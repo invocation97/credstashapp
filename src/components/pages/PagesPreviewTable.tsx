@@ -28,7 +28,6 @@ export default function PagesPreviewTable({
   folderHandle: string;
   organizationId: string;
 }) {
-  console.log("pages", pages);
   const [sort, setSort] = useState({ key: "name", order: "asc" });
 
   const params = useSearchParams();

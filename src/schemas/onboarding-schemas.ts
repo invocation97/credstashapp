@@ -12,22 +12,10 @@ export const createOrganizationSchema = z.object({
     }),
 });
 
-const emailSchema = z
-  .string({
-    message: "Email must be a string",
-  })
-  .email({ message: "Email is invalid" });
+const emailSchema = z.string().email({ message: "Invalid email address" });
 
 export const addUsersToOrganizationSchema = z.object({
-  emails: z
-    .string({
-      message: "Emails must be a string",
-    })
-    .refine((val) => {
-      const emails = val.split(",").map((email) => email.trim());
-      return emails.every((email) => emailSchema.safeParse(email).success);
-    }, "Invalid email format")
-    .transform((val) => val.split(",").map((email) => email.trim())),
+  emails: z.array(z.string().email()),
 });
 
 export const finalizeOnboardingSchema = z.object({

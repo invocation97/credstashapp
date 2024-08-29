@@ -77,3 +77,35 @@ export const verifyUserOrganizationMembership = async (
     return false;
   }
 };
+
+export const addUserToOrganization = async (
+  userEmail: string,
+  organizationId: string
+) => {
+  try {
+    await db.user.update({
+      where: { email: userEmail },
+      data: {
+        organizationId,
+      },
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error adding user to organization:", error);
+    return false;
+  }
+};
+
+export const getOrganizationInvites = async (organizationId: string) => {
+  try {
+    const invites = await db.invite.findMany({
+      where: { organizationId },
+    });
+
+    return invites;
+  } catch (error) {
+    console.error("Error getting pending invites:", error);
+    return [];
+  }
+};

@@ -14,7 +14,7 @@ export const newFolder = cache(
     organizationId: string,
     userId: string,
     isRoot?: boolean,
-    parntFolderId?: string
+    parentFolderId?: string
   ) => {
     const handle = createHandleFromName(name);
 
@@ -26,7 +26,7 @@ export const newFolder = cache(
         createdById: userId,
         editedById: userId,
         isRoot: isRoot || false,
-        parentId: parntFolderId || null,
+        parentId: parentFolderId || null,
       },
     });
     return folder;
@@ -155,5 +155,36 @@ export const getFolderId = async (
     return folder.id;
   } catch (error) {
     console.error("Error getting folder id:", error);
+  }
+};
+
+export const getFolderIdByPath = async (
+  pathArray: string[],
+  organizationId: string
+) => {
+  try {
+    let parentId: string | null = null;
+
+    // Traverse the path array to find the correct folder
+    for (const folderHandle of pathArray) {
+      const folder: any = await db.folder.findFirst({
+        where: {
+          handle: folderHandle,
+          organizationId,
+          parentId,
+        },
+      });
+
+      if (!folder) {
+        return null; // If any folder in the path doesn't exist, return null
+      }
+
+      parentId = folder.id;
+    }
+
+    return parentId;
+  } catch (error) {
+    console.error("Error getting folder id by path:", error);
+    return null;
   }
 };

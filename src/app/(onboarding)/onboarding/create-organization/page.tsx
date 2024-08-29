@@ -1,10 +1,18 @@
-import { getOrganizationById } from "@/actions/actions.organizations";
+import {
+  addUserToOrganization,
+  getOrganizationById,
+} from "@/actions/actions.organizations";
 import { auth } from "@/auth";
 import LinkWithArrow from "@/components/common/LinkWithArrow";
 import CreateOrganizationForm from "@/components/forms/onboarding/CreateOrganizationForm";
 import { redirect } from "next/navigation";
 
-export default async function CreateOrganizationPage() {
+export default async function CreateOrganizationPage({
+  searchParams,
+}: {
+  searchParams: { organizationId: string };
+}) {
+  const { organizationId } = searchParams;
   const session = await auth();
 
   if (!session) {
@@ -17,15 +25,11 @@ export default async function CreateOrganizationPage() {
     redirect("/auth/sign-in");
   }
 
-  let organization = {
-    id: "",
-    name: "",
-  };
+  const organization = await getOrganizationById(user.organizationId as string);
 
-  if (user.organizationId) {
-    /* @ts-ignore */
-    organization = await getOrganizationById(user.organizationId as string);
-  }
+  await addUserToOrganization(user.id, organizationId);
+
+  const joinedOrganization = organization?.id === organizationId;
 
   const organizationName = organization?.name;
 
@@ -35,10 +39,17 @@ export default async function CreateOrganizationPage() {
         <CreateOrganizationForm user={user!} />
       ) : (
         <div className="relative max-w-md text-center">
-          Congratulations on creating {organizationName}!
-          <LinkWithArrow href="/onboarding/add-users">
-            {`Let's add some users`}
-          </LinkWithArrow>
+          Congratulations on {joinedOrganization ? "joining" : "creating"}{" "}
+          {organizationName}!
+          {joinedOrganization ? (
+            <LinkWithArrow href="/dashboard">
+              {`Let's get started`}
+            </LinkWithArrow>
+          ) : (
+            <LinkWithArrow href="/onboarding/add-users">
+              {`Let's add some users`}
+            </LinkWithArrow>
+          )}
         </div>
       )}
     </>

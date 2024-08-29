@@ -11,6 +11,23 @@ import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import { Folder } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 import { ExtendedPageInfo } from "./folders/[folderHandle]/page";
+import { FolderWithChildren } from "@/components/forms/folders/CreateFolderForm";
+
+// Helper function to flatten folders and create a mapping of folderId to folderHandle
+const flattenFolders = (folders: any) => {
+  const flatMap = new Map<string, string>();
+  const traverse = (folderList: any) => {
+    folderList.forEach((folder: FolderWithChildren) => {
+      flatMap.set(folder.id, folder.handle);
+      if (folder.children && folder.children.length > 0) {
+        traverse(folder.children);
+      }
+    });
+  };
+
+  traverse(folders);
+  return flatMap;
+};
 
 export default async function DashboardPage({
   searchParams,
@@ -54,34 +71,48 @@ export default async function DashboardPage({
     return null;
   }
 
-  const pages = await Promise.all(
-    folders.map(async (folder: Folder) => {
-      const pages = await getPagesForFolder(folder.id, user.organizationId!);
-      return pages;
+  // Create a folderId to folderHandle mapping
+  const folderMap = flattenFolders(folders);
+
+  // Recursive function to fetch pages for all folders including nested ones
+  const fetchPagesRecursively = async (folder: any) => {
+    const folderPages = await getPagesForFolder(
+      folder.id,
+      user.organizationId!
+    );
+    const childFolders = folder.children || [];
+
+    const nestedPages = await Promise.all(
+      childFolders.map(async (childFolder: Folder) => {
+        return await fetchPagesRecursively(childFolder);
+      })
+    );
+
+    return [...folderPages!, ...nestedPages.flat()];
+  };
+
+  // Fetch all pages for all folders
+  const allPages = await Promise.all(
+    folders.map(async (folder) => {
+      return await fetchPagesRecursively(folder);
     })
   );
 
-  const pagesWithFolderHandles = pages.map((folderPages, index) => {
-    if (!folderPages) return [];
-    return folderPages.map((page) => {
-      return {
-        ...page,
-        folderHandle: folders[index].handle,
-      };
-    });
+  // Map pages with their respective folder handles using the folderMap
+  const pagesWithFolderHandles = allPages.flat().map((page) => {
+    return {
+      ...page,
+      folderHandle: folderMap.get(page.folderId),
+    };
   });
 
+  // Sort and filter pages for the "Recent Activity" table
   const latestPages = pagesWithFolderHandles
-    .flat()
-    .sort((a, b) => {
-      if (!a || !b) return 0;
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    })
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    )
     .slice(0, 5);
-
-  if (!folders) {
-    return null;
-  }
 
   return (
     <div className="grid grid-cols-1  md:grid-cols-2 gap-4">

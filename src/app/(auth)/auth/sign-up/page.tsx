@@ -1,11 +1,18 @@
 import { handleSignIn } from "@/actions/actions.auth";
 import { auth } from "@/auth";
 import SignInWithEmailForm from "@/components/auth/SignInWithEmailForm";
+import SignUpWithEmailForm from "@/components/auth/SignUpWithEmailForm";
 import { Button } from "@/components/ui/button";
 import { ChromeIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 
-export default async function SignIn() {
+export default async function SignUp({
+  searchParams,
+}: {
+  searchParams: { token: string };
+}) {
+  const { token } = searchParams;
+
   const session = await auth();
 
   if (session) {
@@ -17,7 +24,7 @@ export default async function SignIn() {
       <h2 className="my-6 text-center text-3xl font-bold tracking-tight text-foreground">
         Sign in to <span className="custom-gradient">Get Started</span>
       </h2>
-      <SignInWithEmailForm />
+      <SignUpWithEmailForm token={token} />
       <div className="flex items-center justify-center gap-2 w-full">
         <div className="w-[20%] h-px bg-primary"></div>
         <span>or</span>

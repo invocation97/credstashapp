@@ -7,7 +7,7 @@ import {
 import { User } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
-import { createFolder, newFolder } from "./actions.folders";
+import { newFolder } from "./actions.folders";
 import { newPage } from "./actions.pages";
 
 export const createOrganization = async (name: string, user: User) => {

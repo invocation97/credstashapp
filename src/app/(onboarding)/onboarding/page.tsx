@@ -3,7 +3,12 @@ import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-export default function OnboardingPage() {
+export default function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: { organizationId: string };
+}) {
+  const { organizationId } = searchParams;
   return (
     <div className="space-y-4 text-center">
       <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -14,7 +19,7 @@ export default function OnboardingPage() {
       </p>
       <Link
         className={cn(buttonVariants({ variant: "link" }), "underline group ")}
-        href="/onboarding/create-organization"
+        href={`/onboarding/create-organization/${organizationId !== "" ? `?organizationId=${organizationId}` : ""}`}
       >
         {`Let's get started`}
         <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-2 transition-transform" />

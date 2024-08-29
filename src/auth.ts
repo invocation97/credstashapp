@@ -1,6 +1,7 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth, { DefaultSession } from "next-auth";
 import Google from "next-auth/providers/google";
+import Resend from "next-auth/providers/resend";
 import { db } from "./lib/db";
 
 declare module "next-auth" {
@@ -32,6 +33,7 @@ export const {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
       profile(profile) {
         return {
           id: profile.sub,
@@ -44,9 +46,23 @@ export const {
         };
       },
     }),
+    Resend({
+      apiKey: process.env.RESEND_API_KEY,
+      server: {
+        host: process.env.RESEND_SERVER_HOST,
+        port: parseInt(process.env.RESEND_SERVER_PORT!, 10),
+        auth: {
+          user: process.env.RESEND_EMAIL_SENDER,
+          pass: process.env.RESEND_API_KEY,
+        },
+      },
+      from: process.env.RESEND_EMAIL_SENDER,
+    }),
   ],
   pages: {
     signIn: "/auth/sign-in",
+    verifyRequest: "/auth/verify-request",
+    newUser: "/onboarding",
   },
   callbacks: {
     async session({ session, user }) {

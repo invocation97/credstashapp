@@ -1,8 +1,13 @@
 import { getFoldersForOrganization } from "@/actions/actions.folders";
 import { getPagesForFolder } from "@/actions/actions.pages";
 import { auth } from "@/auth";
+import { Folder } from "@prisma/client";
+import { Settings } from "lucide-react";
 import path from "path";
 import FileTreeItem from "../folders/FileTreeItem";
+import { buttonVariants } from "../ui/button";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default async function DashboardSidebar() {
   const session = await auth();
@@ -23,48 +28,38 @@ export default async function DashboardSidebar() {
     return null;
   }
 
-  // Fetch pages for each folder and ensure all promises are resolved
-  const foldersWithPages = await Promise.all(
-    folders.map(async (folder) => {
-      const folderPages = await getPagesForFolder(
-        folder.id,
-        user.organizationId!
-      );
-      return {
-        name: folder.name,
-        path: path.join("/dashboard/folders", folder.handle),
-        nodes: folderPages?.map((page) => ({
+  // Helper function to build the file tree recursively
+  async function buildFileTree(folder: any) {
+    const folderPages = await getPagesForFolder(
+      folder.id,
+      user.organizationId!
+    );
+    const childFolders = folder.children || [];
+
+    const childNodes = await Promise.all(
+      childFolders.map((childFolder: Folder[]) => buildFileTree(childFolder))
+    );
+
+    return {
+      name: folder.name,
+      path: path.join("/dashboard/folders", folder.handle),
+      nodes: [
+        ...folderPages!.map((page) => ({
           name: page.name,
           path: path.join(
             `/dashboard/folders/${folder.handle}/page/${page.handle}`
           ),
         })),
-      };
-    })
-  );
+        ...childNodes,
+      ],
+    };
+  }
 
-  const sortedFolders = foldersWithPages.sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
-
-  const nodes = folders.map((folder) => ({
-    name: folder.name,
-    path: path.join("/dashboard/folders", folder.handle),
-    nodes: folder.children?.map((childFolder) => ({
-      name: childFolder.name,
-      path: path.join("/dashboard/folders", childFolder.handle),
-      nodes: childFolder.pages?.map((page) => ({
-        name: page.name,
-        path: path.join(
-          `/dashboard/folders/${childFolder.handle}/page/${page.handle}`
-        ),
-      })),
-    })),
-  }));
+  const nodes = await Promise.all(folders.map(buildFileTree));
 
   return (
     <div className="relative hidden h-screen flex-none border-r z-10 pt-20 md:block w-72">
-      <div className="space-y-4 py-4">
+      <div className="flex flex-col items-start gap-4 h-full justify-between py-4">
         <div className="px-3 py-2">
           <div className="font-semibold mb-2">Folders</div>
           <ul>
@@ -72,6 +67,15 @@ export default async function DashboardSidebar() {
               <FileTreeItem node={node} key={node.name} />
             ))}
           </ul>
+        </div>
+        <div className="px-3 py-2">
+          <Link
+            href="/dashboard/settings"
+            className={cn(buttonVariants({ variant: "outline" }), "gap-2")}
+          >
+            <span>Settings</span>
+            <Settings className="size-5 shrink-0 text-primary" />
+          </Link>
         </div>
       </div>
     </div>
